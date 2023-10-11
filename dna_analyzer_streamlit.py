@@ -5,6 +5,8 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 import re
 import pandas as pd
 
+st.set_page_config(page_title="DNA/RNA Analyzer")
+
 
 def main():
     # header
