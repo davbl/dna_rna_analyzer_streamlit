@@ -36,7 +36,8 @@ def main():
         # input validation
         processed_seq = preprocess(input_seq)
         if validate(processed_seq) is False:
-            st.markdown(''':red[Invalid DNA/RNA sequence was entered.]''')
+            st.markdown(":rotating_light: :red[Invalid characters in entered sequence. Only A, C, G, T, U, including lowercase, "
+                "and spaces are allowed.]")
             # st.error('This is an error', icon="🚨")
         
         # Initialize output variables
@@ -70,9 +71,9 @@ def main():
         st.text_area("Reverse", value=reverse_seq)
         st.text_area("Complement", value=complement_seq)
         st.text_area("Reverse Complement", value=reverse_complement_seq)
-        if is_rna(processed_seq) == True:
+        if is_rna(processed_seq) is True:
             st.text_area("DNA Sequence", value=dna_seq)
-        elif is_rna(processed_seq) == False:
+        elif is_rna(processed_seq) is False:
             st.text_area("RNA Sequence", value=rna_seq)
     
         # credit in a wannabe footer
