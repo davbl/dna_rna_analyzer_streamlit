@@ -83,8 +83,8 @@ def main():
     with tab2: 
         # protein sequence box
         st.text_area("Translated Protein Sequence", value=protein_sequence)
-        if "X" in protein_sequence:
-            st.markdown('"X" at the end represents 1 or 2 nucleotides that are not forming an amino acid.')
+        if "_" in protein_sequence:
+            st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming an amino acid.')
         
         # protein length count
         st.text_input("Protein Length", value=protein_length)
@@ -139,8 +139,8 @@ def count_seq_length(seq):
 def count_protein_length(protein_sequence):
     # don't show "0 amino acids" when user hasn't input a seq
     if protein_sequence:
-        # don't count "X" and stop codons, as they're not amino acids
-        cleaned_protein_sequence = protein_sequence.replace("X", "").replace("*", "")
+        # don't count "_" and stop codons, as they're not amino acids
+        cleaned_protein_sequence = protein_sequence.replace("_", "").replace("*", "")
         amino_acid_count = len(cleaned_protein_sequence)
         if amino_acid_count == 1:
             return "1 amino acid"
@@ -217,8 +217,8 @@ def translate(rna):
     codons = [rna[i:i + 3] for i in range(0, len(rna), 3)] 
     
     # Translate each codon to its corresponding amino acid
-    protein_sequence = [codon_table.get(codon, 'X') for codon in codons]
-    protein_sequence = "".join(protein_sequence) # join a list, eg: [G, E, D, A, V, *, T, X, R] into str "GEDAV*TXR"
+    protein_sequence = [codon_table.get(codon, '_') for codon in codons]
+    protein_sequence = "".join(protein_sequence) # join a list, eg: [G, E, D, A, V, *, T, R, _] into str "GEDAV*TR_"
     
     return protein_sequence 
 
@@ -235,14 +235,14 @@ def aa_to_ami_aci(aa_seq):
     }
     
     # Map the single-letter amino acid codes to three-letter codes
-    ami_aci_sequence = [aa_mapping.get(aa, 'X') for aa in aa_seq]
+    ami_aci_sequence = [aa_mapping.get(aa, '_') for aa in aa_seq]
     
     return ami_aci_sequence # a list, eg: [Gly, Asp, Tyr, Leu]
 
 
 def df_amino_frequency(ami_aci_sequence):
     # Filter out stop codons and unknown amino acids
-    filtered_sequence = [amino_acid for amino_acid in ami_aci_sequence if amino_acid not in ['*', 'X']]
+    filtered_sequence = [amino_acid for amino_acid in ami_aci_sequence if amino_acid not in ['*', '_']]
     
     # Create a DataFrame from the filtered sequence
     df = pd.DataFrame(filtered_sequence, columns=['Amino Acid'])
