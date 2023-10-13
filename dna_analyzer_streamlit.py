@@ -79,7 +79,10 @@ def main():
     # tab2: "Translation"
     with tab2: 
         st.text_area("Translated Protein Sequence", value="".join(protein_sequence))
+        if "X" in protein_sequence:
+            st.markdown('"X" at the end of the protein sequence represents 1 or 2 nucleotides that are not forming an amino acid.')
         add_vertical_space(2)
+        
         # Plot the amino acid frequency
         ami_aci_sequence = aa_to_ami_aci(protein_sequence)
         if validate(processed_seq):
