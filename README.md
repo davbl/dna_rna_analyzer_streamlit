@@ -8,4 +8,4 @@ In a nutshell:
 - Translation
 
 ## 🔗 URL
-https://dnarna.streamlit.app/
+https://dnarna.streamlit.app
