@@ -35,7 +35,7 @@ def main():
         
         # input validation
         processed_seq = preprocess(input_seq)
-        if validate(processed_seq) == False:
+        if validate(processed_seq) is False:
             st.markdown(''':red[Invalid DNA/RNA sequence was entered.]''')
             # st.error('This is an error', icon="🚨")
         
@@ -48,10 +48,12 @@ def main():
         rna_seq = ""
         dna_seq = ""
         protein_sequence = ""
+        protein_length = ""
     
         # Update output variables if the input is validated
+        # ie don't show anything in output boxes until we know the input sequence is valid
         if validate(processed_seq):
-            sequence_length = length(processed_seq)
+            sequence_length = count_seq_length(processed_seq)
             gc_content = count_gc(processed_seq)
             reverse_seq = reverse(processed_seq)
             complement_seq = complement(processed_seq)
@@ -59,6 +61,7 @@ def main():
             rna_seq = transcribe(processed_seq)
             dna_seq = reverse_transcribe(processed_seq)
             protein_sequence = translate(rna_seq)
+            protein_length = count_protein_length(protein_sequence)
     
         # Output boxes
         add_vertical_space(2)
@@ -78,16 +81,20 @@ def main():
 
     # tab2: "Translation"
     with tab2: 
-        st.text_area("Translated Protein Sequence", value="".join(protein_sequence))
+        # protein sequence box
+        st.text_area("Translated Protein Sequence", value=protein_sequence)
         if "X" in protein_sequence:
-            st.markdown('"X" at the end of the protein sequence represents 1 or 2 nucleotides that are not forming an amino acid.')
+            st.markdown('"X" at the end represents 1 or 2 nucleotides that are not forming an amino acid.')
+        
+        # protein length count
+        st.text_input("Protein Length", value=protein_length)
         add_vertical_space(2)
         
         # Plot the amino acid frequency
         ami_aci_sequence = aa_to_ami_aci(protein_sequence)
         if validate(processed_seq):
             st.markdown("**Amino Acid Frequency**")
-            st.bar_chart(plot_amino_frequency(ami_aci_sequence), x="Amino Acid", y="Frequency", color=(255, 75, 75))
+            st.bar_chart(df_amino_frequency(ami_aci_sequence), x="Amino Acid", y="Frequency", color=(255, 75, 75))
 
 
 
@@ -120,9 +127,25 @@ def is_rna(seq):
             return False
 
 
-def length(seq):
+def count_seq_length(seq):
     if seq:
-        return f"{len(seq)} nucleotides"
+        nucleotide_count = len(seq)
+        if nucleotide_count == 1:
+            return "1 nucleotide"
+        else:
+            return f"{nucleotide_count} nucleotides"
+
+
+def count_protein_length(protein_sequence):
+    # don't show "0 amino acids" when user hasn't input a seq
+    if protein_sequence:
+        # don't count "X" and stop codons, as they're not amino acids
+        cleaned_protein_sequence = protein_sequence.replace("X", "").replace("*", "")
+        amino_acid_count = len(cleaned_protein_sequence)
+        if amino_acid_count == 1:
+            return "1 amino acid"
+        else:
+            return f"{amino_acid_count} amino acids"
 
 
 def count_gc(seq):
@@ -195,11 +218,12 @@ def translate(rna):
     
     # Translate each codon to its corresponding amino acid
     protein_sequence = [codon_table.get(codon, 'X') for codon in codons]
+    protein_sequence = "".join(protein_sequence) # join a list, eg: [G, E, D, A, V, *, T, X, R] into str "GEDAV*TXR"
     
-    return protein_sequence # eg: [G, E, D, A, V, *, T, X, R]
+    return protein_sequence 
 
 
-def aa_to_ami_aci(aa_list):
+def aa_to_ami_aci(aa_seq):
     # Define a mapping from single-letter amino acid codes to three-letter codes
     aa_mapping = {
         'A': 'Ala', 'R': 'Arg', 'N': 'Asn', 'D': 'Asp',
@@ -211,12 +235,12 @@ def aa_to_ami_aci(aa_list):
     }
     
     # Map the single-letter amino acid codes to three-letter codes
-    ami_aci_sequence = [aa_mapping.get(aa, 'X') for aa in aa_list]
+    ami_aci_sequence = [aa_mapping.get(aa, 'X') for aa in aa_seq]
     
-    return ami_aci_sequence # eg: [Gly, Asp, Tyr, Leu]
+    return ami_aci_sequence # a list, eg: [Gly, Asp, Tyr, Leu]
 
 
-def plot_amino_frequency(ami_aci_sequence):
+def df_amino_frequency(ami_aci_sequence):
     # Filter out stop codons and unknown amino acids
     filtered_sequence = [amino_acid for amino_acid in ami_aci_sequence if amino_acid not in ['*', 'X']]
     
