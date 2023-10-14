@@ -90,10 +90,11 @@ def main():
         st.text_area("Translated Protein Sequence", value=protein_sequence)
         if "_" in protein_sequence:
             st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming an amino acid.')
+            # add_vertical_space(1)
         
         # protein length count
         st.text_input("Protein Length", value=protein_length)
-        add_vertical_space(2)
+        add_vertical_space(1)
         
         # Plot the amino acid frequency
         ami_aci_sequence = aa_to_ami_aci(protein_sequence)
