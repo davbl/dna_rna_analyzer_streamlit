@@ -40,6 +40,10 @@ def main():
                 "and spaces are allowed.]")
             # st.error('This is an error', icon="🚨")
         
+        # show warning msg if both T and U in input
+        if "T" in processed_seq and "U" in processed_seq:
+            st.markdown(":warning: Entered sequence contains both T and U.")
+        
         # Initialize output variables
         sequence_length = ""
         gc_content = ""
