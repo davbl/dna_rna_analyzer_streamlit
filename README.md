@@ -7,5 +7,7 @@ In a nutshell:
 - RNA from DNA and vice versa 
 - Translation
 
+The app was built as the final project for [CS50P](https://pll.harvard.edu/course/cs50s-introduction-programming-python).
+
 ## 🔗 URL
 [dnarna.streamlit.app](https://dnarna.streamlit.app)
