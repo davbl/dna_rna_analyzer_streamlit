@@ -4,6 +4,7 @@ import streamlit as st
 from streamlit_extras.add_vertical_space import add_vertical_space 
 import re
 import pandas as pd
+import altair as alt
 
 st.set_page_config(page_title="DNA/RNA Analyzer")
 
@@ -89,18 +90,22 @@ def main():
         # protein sequence box
         st.text_area("Translated Protein Sequence", value=protein_sequence)
         if "_" in protein_sequence:
-            st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming an amino acid.')
+            st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming a codon.')
             # add_vertical_space(1)
         
-        # protein length count
-        st.text_input("Protein Length", value=protein_length)
+        # amino acid count
+        st.text_input("Amino Acid Count", value=protein_length)
         add_vertical_space(1)
         
         # Plot the amino acid frequency
         ami_aci_sequence = aa_to_ami_aci(protein_sequence)
+        result_df = df_amino_frequency(ami_aci_sequence)
+        chart = plot_amino_frequency(result_df)
+        
         if validate(processed_seq):
             st.markdown("**Amino Acid Frequency**")
-            st.bar_chart(df_amino_frequency(ami_aci_sequence), x="Amino Acid", y="Frequency", color=(255, 75, 75))
+            # st.bar_chart(df_amino_frequency(ami_aci_sequence), x="Amino Acid", y="Frequency", color=(255, 75, 75))
+            st.altair_chart(chart, use_container_width=True, theme="streamlit")
 
 
 
@@ -267,6 +272,22 @@ def df_amino_frequency(ami_aci_sequence):
     
     return result_df
 
+
+def plot_amino_frequency(df):
+    chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x=alt.X('Amino Acid', sort=None),
+            y=alt.Y('Frequency', axis=alt.Axis(format='d')),
+            size=alt.value(25),
+            color=alt.value('rgb(255, 75, 75)'),
+            tooltip=['Amino Acid', 'Frequency']
+        )
+        .configure_legend(disable=True)  # Hide the legend
+    )
+    
+    return chart
 
 
 if __name__ == "__main__":
