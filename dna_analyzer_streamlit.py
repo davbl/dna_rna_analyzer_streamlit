@@ -13,10 +13,10 @@ def main():
     # header
     st.title("DNA/RNA Analyzer", anchor=False)
     st.markdown("Get standard bioinformatics stats, and more, for your DNA or RNA sequence.")
-
-    # tabs
+    
+    ### TABS ###
     tab1, tab2 = st.tabs(["Primary", "Translation"])
-
+    
     with tab1:
         # this is for the "Clear" btn to work
         # See "Option 3" here https://docs.streamlit.io/library/advanced-features/button-behavior-and-examples
@@ -55,7 +55,7 @@ def main():
         dna_seq = ""
         protein_sequence = ""
         protein_length = ""
-    
+        
         # Update output variables if the input is validated
         # ie don't show anything in output boxes until we know the input sequence is valid
         if validate(processed_seq):
@@ -68,7 +68,7 @@ def main():
             dna_seq = reverse_transcribe(processed_seq)
             protein_sequence = translate(rna_seq)
             protein_length = count_protein_length(protein_sequence)
-    
+        
         # Output boxes
         add_vertical_space(2)
         st.text_input("Sequence Length", value=sequence_length)
@@ -80,12 +80,13 @@ def main():
             st.text_area("DNA Sequence", value=dna_seq)
         elif is_rna(processed_seq) is False:
             st.text_area("RNA Sequence", value=rna_seq)
-    
+        
         # credit in a wannabe footer
-        st.caption("Built by [David Smehlik](https://www.linkedin.com/in/dvsmehlik/) in 2023 as the final project for "
+        st.caption("Built by [David Smehlik](https://www.linkedin.com/in/dvsmehlik/) in 2023, originally as the final project for "
             "[CS50P](https://pll.harvard.edu/course/cs50s-introduction-programming-python).")
-
-    # tab2: "Translation"
+    
+    
+    ## Tab2 "Translation" ##
     with tab2: 
         # protein sequence box
         st.text_area("Translated Protein Sequence", value=protein_sequence)
@@ -93,20 +94,47 @@ def main():
             st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming a codon.')
             # add_vertical_space(1)
         
-        # amino acid count
+        
+        # codon count
+        codon_count = ""
+        if protein_sequence:
+            codon_count = count_codons(get_codons(rna_seq))
+        st.text_input("Codon Count", value=codon_count)
+        # add_vertical_space(1)
+        
+        # show Codon Usage table
+        st.markdown("**Codon Usage**")
+        st.dataframe(
+            create_df_codons(rna_seq), 
+            # the following _config is for showing the progress chart in each row
+            column_config={
+                "Relative Usage": st.column_config.ProgressColumn(
+                    # "Relative Usage",
+                    # help="The sales volume in USD",
+                    # format="%.2f",
+                    min_value=0,
+                    max_value=1,
+                ),
+            },
+            use_container_width=True,
+            hide_index=True,
+        )
+        # add_vertical_space(1)
+        
+        
+        # "Amino Acid Count" box
         st.text_input("Amino Acid Count", value=protein_length)
-        add_vertical_space(1)
+        # add_vertical_space(1)
         
-        # Plot the amino acid frequency
-        ami_aci_sequence = aa_to_ami_aci(protein_sequence)
-        result_df = df_amino_frequency(ami_aci_sequence)
-        chart = plot_amino_frequency(result_df)
-        
-        if validate(processed_seq):
+        if protein_sequence and protein_length != "0 amino acids":
+            # Plot the amino acid frequency
+            ami_aci_sequence = aa_to_ami_aci(protein_sequence)      
+            result_df = df_amino_frequency(ami_aci_sequence)
+            chart = plot_amino_frequency(result_df)
+            
             st.markdown("**Amino Acid Frequency**")
             # st.bar_chart(df_amino_frequency(ami_aci_sequence), x="Amino Acid", y="Frequency", color=(255, 75, 75))
             st.altair_chart(chart, use_container_width=True, theme="streamlit")
-
 
 
 
@@ -288,6 +316,141 @@ def plot_amino_frequency(df):
     )
     
     return chart
+
+
+def get_codons(rna):
+    ## Remove a possible extra 1 or 2 nucleotides, so that they don't show up the codon_list ##
+    # Determine the length of the RNA sequence
+    seq_length = len(rna)
+    
+    # Calculate the number of complete codons (triplets)
+    num_complete_codons = seq_length // 3
+    
+    # Remove the extra letters at the end if the length is not divisible by 3
+    rna = rna[:num_complete_codons * 3]
+    
+    # Split the RNA sequence into codons (triplets) in a list
+    codon_list = [rna[i:i + 3] for i in range(0, len(rna), 3)] 
+    
+    return codon_list
+
+
+def count_codons(codon_list):
+    # don't show "0 codons" when user hasn't input a seq
+    # if codon_list:
+    codon_count = len(codon_list)
+    if codon_count == 1:
+        return "1 codon"
+    else:
+        return f"{codon_count} codons"
+
+
+def codon_to_ami_aci(codon_list):
+    # Define the codon table mapping RNA codons to ami aci
+    codon_table = {
+        'UUU': 'Phe', 'UUC': 'Phe', 
+        'UUA': 'Leu', 'UUG': 'Leu',
+        'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 
+        'UAU': 'Tyr', 'UAC': 'Tyr',
+        'UGU': 'Cys', 'UGC': 'Cys',
+        'UGG': 'Trp', 
+        'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu', 
+        'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro', 
+        'CAU': 'His', 'CAC': 'His', 
+        'CAA': 'Gln', 'CAG': 'Gln', 
+        'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg', 
+        'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile',
+        'AUG': 'Met',
+        'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+        'AAU': 'Asn', 'AAC': 'Asn', 
+        'AAA': 'Lys', 'AAG': 'Lys',
+        'AGU': 'Ser', 'AGC': 'Ser', 
+        'AGA': 'Arg', 'AGG': 'Arg',
+        'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val', 
+        'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala', 
+        'GAU': 'Asp', 'GAC': 'Asp', 
+        'GAA': 'Glu', 'GAG': 'Glu', 
+        'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly',
+        # stop codons
+        'UGA': '*', 'UAA': '*', 'UAG': '*',
+    }
+    
+    # # Create a list of dictionaries for each codon and its corresponding amino acid
+    # data = [{'Codon': codon, 'Amino Acid': codon_table.get(codon, 'Unknown')} for codon in codon_list]
+    
+    
+    # Initialize a dictionary to store codon counts
+    codon_counts = {}
+    
+    # Iterate through the codon list and count occurrences
+    for codon in codon_list:
+        codon_counts[codon] = codon_counts.get(codon, 0) + 1
+    
+    # Create a list of dictionaries for each codon and its corresponding amino acid and count
+    data = [{
+        'Codon': codon, 
+        'Amino Acid': codon_table.get(codon, 'Unknown'), 
+        'Total Count': count,
+    } for codon, count in codon_counts.items()]
+    
+    # Add codons from codon_table that are not already in the data with a count of 0
+    for codon, amino_acid in codon_table.items():
+        if codon not in codon_counts:
+            data.append({
+                'Codon': codon,
+                'Amino Acid': amino_acid,
+                'Total Count': 0,
+            })
+    
+    return data
+
+
+def create_df_codons(rna):
+    # Get the codon list
+    codon_list = get_codons(rna)
+    
+    # Get the data for the DataFrame
+    data = codon_to_ami_aci(codon_list)
+    
+    # Create a DataFrame
+    df = pd.DataFrame(data, columns=['Amino Acid', 'Codon', 'Total Count'])
+    
+    # # Group by codon and count occurrences
+    # grouped_df = df.groupby(['Amino Acid', 'Codon']).size().reset_index(name='Count')
+    
+    
+    # Get the total count of each amino acid
+    total_count_for_aa = df.groupby('Amino Acid')['Total Count'].transform('sum')
+    
+    # Calculate relative usage (percentage) for each codon, fill NaN with 0
+    df['Relative Usage'] = (df['Total Count'] / total_count_for_aa).fillna(0)
+    
+    # # Add "%" to the "Relative Usage" column
+    # df['Relative Usage'] = df['Relative Usage'].astype(str) + '%'
+    # doesn't work bcs streamlit must have only number to create the progress bar chart
+    
+    
+    # Calculate total usage for each codon
+    total_count_all_codons = df['Total Count'].sum()
+    # df['Total Usage'] = ((df['Total Count'] / total_count_all_codons) * 100).fillna(0).round(2)
+    df['Total Usage'] = ((df['Total Count'] / total_count_all_codons) * 100).fillna(0).apply(lambda x: '{:.2f}'.format(x))
+    
+    # Add "%" to the "Total Usage" column
+    df['Total Usage'] = df['Total Usage'].astype(str) + '%'
+    
+    
+    # Rearrange columns
+    df = df.reindex(['Amino Acid', 'Codon', 'Total Count', 'Total Usage', 'Relative Usage'], axis=1)
+    
+    # Sort by 'Amino Acid' and then reverse sort by 'Relative Usage'
+    df = df.sort_values(by=['Amino Acid', 'Relative Usage'], ascending=[True, False])
+    
+    # Apply styling to align the "Total Count" column to the left
+    # df = df.style.set_properties(**{'Total Count': 'text-align: left'})
+    df['Total Count'] = df['Total Count'].astype(str)
+    
+    return df
+
 
 
 if __name__ == "__main__":
