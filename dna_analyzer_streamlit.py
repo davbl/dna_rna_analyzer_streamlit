@@ -22,13 +22,16 @@ def main():
         # See "Option 3" here https://docs.streamlit.io/library/advanced-features/button-behavior-and-examples
         begin = st.container() 
         
-        # buttons
-        col1, col2 = st.columns([1, 7.5])
+        # Buttons
+        col1, col2 = st.columns([0.3, 0.7])
         with col1:
-            st.button("Submit", type="primary")
-        with col2:
-            if st.button("Clear", type="secondary"):
-                st.session_state.input_seq = ""
+            col1, col2 = st.columns([0.5, 0.5])
+            with col1:
+                st.button("Submit", type="primary", use_container_width=True)
+            with col2:
+                if st.button("Clear", type="secondary", use_container_width=True):
+                    st.session_state.input_seq = ""
+        
         
         # input box
         begin.text_area("Enter DNA/RNA Sequence", key="input_seq")
@@ -81,9 +84,15 @@ def main():
         elif is_rna(processed_seq) is False:
             st.text_area("RNA Sequence", value=rna_seq)
         
-        # credit in a wannabe footer
-        st.caption("Built by [David Smehlik](https://www.linkedin.com/in/dvsmehlik/) in 2023, originally as the final project for "
-            "[CS50P](https://pll.harvard.edu/course/cs50s-introduction-programming-python).")
+        
+        # wide mode msg
+        # st.caption("For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode")
+        # st.markdown("For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode")
+        
+        # credit in a wannabe footer + wide mode msg
+        st.caption(":gray[For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode.]  \n"
+                "Built by [David Smehlik](https://www.linkedin.com/in/dvsmehlik/) in 2023, originally as the final project for "
+                "[CS50P](https://pll.harvard.edu/course/cs50s-introduction-programming-python).")
     
     
     ## Tab2 "Translation" ##
