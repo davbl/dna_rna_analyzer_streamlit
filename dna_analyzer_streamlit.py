@@ -91,8 +91,7 @@ def main():
         
         # credit in a wannabe footer + wide mode msg
         st.caption(":gray[For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode.]  \n"
-                "Built by [David S.](https://www.linkedin.com/in/davess/) in 2023, originally as the final project for "
-                "[CS50P](https://pll.harvard.edu/course/cs50s-introduction-programming-python).")
+                "Created by [Dave S.](https://www.linkedin.com/in/davess/) in 2023.")
     
     
     ## Tab2 "Translation" ##
