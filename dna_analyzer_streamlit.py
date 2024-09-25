@@ -90,8 +90,10 @@ def main():
         # st.markdown("For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode")
         
         # credit in a wannabe footer + wide mode msg
-        st.caption(":gray[For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode.]  \n"
-                "Created by [Dave S.](https://www.linkedin.com/in/davess/) in 2023.")
+        st.caption(
+            ":gray[For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode.]  \n"
+            "©2023 [Dave](https://www.dnarna.co)  •  Feedback: [Tell me what to improve.](https://forms.gle/cza67aqfGE4qwjdG9)"
+        )
     
     
     ## Tab2 "Translation" ##
