@@ -10,41 +10,59 @@ st.set_page_config(page_title="DNA/RNA Analyzer")
 
 
 def main():
-    # header
+    # Initialize session state variables if they don't exist
+    if "input_seq" not in st.session_state:
+        st.session_state["input_seq"] = ""
+    if "submitted" not in st.session_state:
+        st.session_state["submitted"] = False
+    
+    def clear():
+        st.session_state.input_seq = ""
+        st.session_state.submitted = False
+    
+    # Header
     st.title("DNA/RNA Analyzer", anchor=False)
     st.markdown("Get standard bioinformatics stats, and more, for your DNA or RNA sequence.")
     
-    ### TABS ###
+    # TABS
     tab1, tab2 = st.tabs(["Primary", "Translation"])
     
+    ### TAB 1 "Primary" ###
     with tab1:
         # this is for the "Clear" btn to work
         # See "Option 3" here https://docs.streamlit.io/library/advanced-features/button-behavior-and-examples
         begin = st.container() 
         
-        # Buttons
+        # Submit and Clear Buttons
         col1, col2 = st.columns([0.3, 0.7])
         with col1:
             col1, col2 = st.columns([0.5, 0.5])
             with col1:
-                st.button("Submit", type="primary", use_container_width=True)
+                submit = st.button("Submit", type="primary", use_container_width=True)
+                if submit and st.session_state.input_seq:
+                    st.session_state.submitted = True
             with col2:
-                st.button("Clear", on_click=clear_text, type="secondary", use_container_width=True)
+                clear = st.button("Clear", type="secondary", use_container_width=True, on_click=clear)
+                # if clear:
+                #     st.session_state.input_seq = ""
+                #     st.session_state.submitted = False
+                #     st.rerun()
 
         
-        
-        # input box
-        begin.text_area("Enter DNA/RNA Sequence", key="input_seq")
+        # Input box
+        begin.text_area("Enter DNA/RNA Sequence", value=st.session_state.input_seq, key="input_seq", on_change=None)
         input_seq = st.session_state.input_seq
+
+        ###
         
-        # input validation
+        # Input validation
         processed_seq = preprocess(input_seq)
         if validate(processed_seq) is False:
             st.markdown(":rotating_light: :red[Invalid characters in entered sequence. Only A, C, G, T, U, including lowercase, "
                 "and spaces are allowed.]")
             # st.error('This is an error', icon="🚨")
         
-        # show warning msg if both T and U in input
+        # Show warning msg if both T and U in input
         if "T" in processed_seq and "U" in processed_seq:
             st.markdown(":warning: Entered sequence contains both T and U.")
         
@@ -60,7 +78,7 @@ def main():
         protein_length = ""
         
         # Update output variables if the input is validated
-        # ie don't show anything in output boxes until we know the input sequence is valid
+        # ie don't show content in output boxes until we know the input sequence is valid
         if validate(processed_seq):
             sequence_length = count_seq_length(processed_seq)
             gc_content = count_gc(processed_seq)
@@ -84,35 +102,36 @@ def main():
         elif is_rna(processed_seq) is False:
             st.text_area("RNA Sequence", value=rna_seq)
         
+        ###
         
-        # wide mode msg
+        # Wide mode msg
         # st.caption("For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode")
         # st.markdown("For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode")
         
-        # credit in a wannabe footer + wide mode msg
+        # Credit in footer + wide mode msg
         st.caption(
             ":gray[For the app to take the entire width of the screen, go to: Top right → 3 dots menu → Settings → Wide mode.]  \n"
             "© 2023 [Dave](https://www.dnarna.co)  •  Feedback: [Tell me what to improve.](https://forms.gle/cza67aqfGE4qwjdG9)"
         )
     
     
-    ## Tab2 "Translation" ##
+    ### TAB 2 "Translation" ###
     with tab2: 
-        # protein sequence box
+        # Protein sequence box
         st.text_area("Translated Protein Sequence", value=protein_sequence)
         if "_" in protein_sequence:
             st.markdown('"_" at the end represents 1 or 2 nucleotides that are not forming a codon.')
             # add_vertical_space(1)
         
         
-        # codon count
+        # Codon count
         codon_count = ""
         if protein_sequence:
             codon_count = count_codons(get_codons(rna_seq))
         st.text_input("Codon Count", value=codon_count)
         # add_vertical_space(1)
         
-        # show Codon Usage table
+        # Show Codon Usage table
         st.markdown("**Codon Usage**")
         st.dataframe(
             create_df_codons(rna_seq), 
@@ -460,10 +479,6 @@ def create_df_codons(rna):
     df['Total Count'] = df['Total Count'].astype(str)
     
     return df
-
-
-def clear_text():
-    st.session_state["input_seq"] = ""
 
 
 
