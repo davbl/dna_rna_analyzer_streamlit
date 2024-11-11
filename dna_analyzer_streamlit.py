@@ -29,8 +29,8 @@ def main():
             with col1:
                 st.button("Submit", type="primary", use_container_width=True)
             with col2:
-                if st.button("Clear", type="secondary", use_container_width=True):
-                    st.session_state.input_seq = ""
+                st.button("Clear", on_click=clear_text, type="secondary", use_container_width=True)
+
         
         
         # input box
@@ -460,6 +460,10 @@ def create_df_codons(rna):
     df['Total Count'] = df['Total Count'].astype(str)
     
     return df
+
+
+def clear_text():
+    st.session_state["input_seq"] = ""
 
 
 
